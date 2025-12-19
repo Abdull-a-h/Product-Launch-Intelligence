@@ -1,4 +1,4 @@
-# app.py - Fixed LangGraph Streamlit Application
+# app.py 
 import streamlit as st
 import asyncio
 import os
@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import json
 import logging
 
-# Fix for asyncio in Streamlit
 try:
     import nest_asyncio
     nest_asyncio.apply()
@@ -18,7 +17,7 @@ except ImportError:
 # Load environment variables
 load_dotenv()
 
-# Import our fixed LangGraph implementation
+# Import our LangGraph implementation
 from product_agent import ProductLaunchOrchestrator
 
 # Configure logging
@@ -43,9 +42,6 @@ def run_async(coro):
 async def run_analysis_with_progress(orchestrator, product_info, progress_bar, status_text):
     """Run analysis with progress updates"""
     
-    # This is a simplified progress tracking - in a real implementation,
-    # you'd need to modify the orchestrator to emit progress events
-    
     status_text.text("📊 Analyzing sentiment across platforms...")
     progress_bar.progress(50)
     await asyncio.sleep(0.1)  # Small delay for UI update
@@ -57,19 +53,16 @@ async def run_analysis_with_progress(orchestrator, product_info, progress_bar, s
     status_text.text("✍️ Creating social media content...")
     progress_bar.progress(90)
     
-    # Run the actual analysis
     results = await orchestrator.analyze_product_launch(product_info)
     
     return results
 
-# --- Page Configuration and Enhanced CSS ---
 st.set_page_config(
     page_title="Launch Intelligence AI - LangGraph Edition", 
     page_icon="🚀", 
     layout="wide"
 )
 
-# Enhanced CSS for better UI
 enhanced_css = """
 <style>
 .main-header {
@@ -266,7 +259,6 @@ with st.form("product_form"):
         use_container_width=True
     )
 
-# --- Analysis Execution with Fixed Async Handling ---
 if submitted:
     if not all([groq_key_loaded, tavily_key_loaded, hf_key_loaded]):
         st.markdown('<div class="error-banner">❌ Missing required API keys. Please check your .env file.</div>', unsafe_allow_html=True)
@@ -298,7 +290,6 @@ if submitted:
                 status_text.text("🔍 Running competitive analysis...")
                 progress_bar.progress(25)
                 
-                # Run the analysis with progress updates using the fixed async wrapper
                 results = run_async(run_analysis_with_progress(orchestrator, product_info, progress_bar, status_text))
                 
                 progress_bar.progress(100)
@@ -334,7 +325,6 @@ def display_execution_metadata(metadata):
             st.write(f"• Version: {metadata.get('workflow_version', 'N/A')}")
             st.write(f"• Status: {metadata.get('final_status', 'N/A')}")
             
-            # Add execution time if available
             started = metadata.get('started_at')
             if started:
                 try:
@@ -354,7 +344,6 @@ def display_execution_metadata(metadata):
         with col3:
             st.markdown("**📈 Quality Metrics:**")
             
-            # Calculate quality score based on results
             quality_score = 0
             if metadata.get('competitors_found', 0) > 0:
                 quality_score += 25
@@ -411,7 +400,7 @@ def display_competitive_analysis(analysis):
         market_position = competitor.get('market_position', 'Position unknown')
         
         with st.expander(f"**{i+1}. {competitor_name}** - *{market_position}*", expanded=i==0):
-            # Create competitor card
+
             st.markdown(f'<div class="competitor-card">', unsafe_allow_html=True)
             
             col1, col2 = st.columns(2)
@@ -460,7 +449,6 @@ def display_sentiment_analysis(analysis):
         st.info("💡 This could be due to search API limitations or network issues. Try again later.")
         return
     
-    # Filter out failed analyses
     valid_analyses = [a for a in analysis if a.get('confidence_score', 0) > 0]
     
     if valid_analyses:
@@ -468,7 +456,7 @@ def display_sentiment_analysis(analysis):
     else:
         st.warning(f"⚠️ Analyzed {len(analysis)} platforms but with limited confidence in results")
     
-    # Create metrics row
+
     cols = st.columns(len(analysis))
     
     for i, platform_data in enumerate(analysis):
@@ -477,7 +465,6 @@ def display_sentiment_analysis(analysis):
             confidence = platform_data.get("confidence_score", 0)
             platform_name = platform_data.get('platform', 'Unknown')
             
-            # Enhanced emoji and color logic
             if sentiment_score > 0.3:
                 emoji = "😊"
                 delta_color = "normal"
@@ -491,7 +478,7 @@ def display_sentiment_analysis(analysis):
                 emoji = "😟"
                 delta_color = "inverse"
             
-            # Display metrics with confidence indicator
+
             confidence_text = f"Confidence: {confidence:.1%}" if confidence > 0 else "Low confidence"
             st.metric(
                 label=f"{platform_name} {emoji}", 
@@ -499,7 +486,7 @@ def display_sentiment_analysis(analysis):
                 delta=confidence_text
             )
             
-            # Add confidence warning for low-confidence results
+
             if confidence < 0.3:
                 st.caption("⚠️ Limited data")
     
@@ -542,7 +529,6 @@ def display_sentiment_analysis(analysis):
             else:
                 st.info("📊 No specific mention counts available")
             
-            # Key themes with better visualization
             themes = platform_data.get('key_themes', [])
             if themes and themes != [f"{platform_name} themes"]:
                 st.markdown(f"**🏷️ Key Themes on {platform_name}:**")
@@ -551,7 +537,7 @@ def display_sentiment_analysis(analysis):
                 theme_html = ""
                 
                 for idx, theme in enumerate(themes):
-                    if theme and theme.strip():  # Only show non-empty themes
+                    if theme and theme.strip():  
                         color = theme_colors[idx % len(theme_colors)]
                         theme_html += f'<span style="background-color: {color}; color: white; padding: 6px 12px; margin: 4px; border-radius: 15px; font-size: 14px; display: inline-block; font-weight: 500;">{theme}</span> '
                 
@@ -576,7 +562,6 @@ def display_launch_strategy(strategy_data):
     strategy = strategy_data["launch_strategy"]
     faq_data = strategy_data.get("faq", [])
     
-    # Positioning statement highlight
     positioning = strategy.get('positioning_statement', 'N/A')
     if positioning and positioning != 'N/A':
         st.markdown(f'<div class="strategy-card">', unsafe_allow_html=True)
@@ -601,7 +586,7 @@ def display_launch_strategy(strategy_data):
     else:
         st.warning(f"⚠️ Partial strategy generated ({completeness_percent:.0f}% complete)")
     
-    # Two-column layout for strategy details
+
     col1, col2 = st.columns(2)
     
     with col1:
@@ -680,7 +665,6 @@ def display_social_media_posts(posts):
         st.info("💡 This could be due to sentiment analysis issues or image generation failures. Try running the analysis again.")
         return
     
-    # Filter out empty or invalid posts
     valid_posts = [post for post in posts if isinstance(post, dict) and post.get('text_content')]
     
     if valid_posts:
@@ -706,11 +690,10 @@ def display_social_media_posts(posts):
         </div>
         """, unsafe_allow_html=True)
         
-        # Layout: Image and content side by side
         img_col, content_col = st.columns([1.2, 1])
         
         with img_col:
-            # Display AI-generated image
+
             image_uri = post.get("image_url")
             if image_uri and image_uri.startswith("data:image"):
                 try:
@@ -741,13 +724,12 @@ def display_social_media_posts(posts):
                 st.markdown("• Content policy restrictions")
         
         with content_col:
-            # Post content with validation
             st.markdown("**📝 Post Content:**")
             post_content = post.get('text_content', 'No content generated')
             if post_content and post_content != 'No content generated':
                 st.write(post_content)
                 
-                # Content quality indicator
+
                 word_count = len(post_content.split())
                 if word_count > 20:
                     st.success(f"✅ Rich content ({word_count} words)")
@@ -762,10 +744,10 @@ def display_social_media_posts(posts):
             post_type = post.get('post_type', 'Unknown')
             st.markdown(f"**📋 Type:** {post_type}")
             
-            # Hashtags with enhanced styling and validation
+
             hashtags = post.get('hashtags', [])
             if hashtags and isinstance(hashtags, list) and len(hashtags) > 0:
-                # Filter out empty hashtags
+  
                 valid_hashtags = [tag for tag in hashtags if tag and tag.strip() and tag.startswith('#')]
                 
                 if valid_hashtags:
@@ -801,13 +783,13 @@ def display_social_media_posts(posts):
         
         st.divider()
 
-# --- Results Display with Enhanced Error Handling ---
+
 if "analysis_complete" in st.session_state and st.session_state.analysis_complete:
     st.divider()
     
     results = st.session_state.results
     
-    # Display workflow status with enhanced styling
+
     workflow_status = results.get("workflow_status", "unknown")
     if workflow_status == "failed":
         st.markdown('<div class="error-banner">❌ Analysis Failed - Check Error Details Below</div>', unsafe_allow_html=True)
@@ -851,7 +833,7 @@ if "analysis_complete" in st.session_state and st.session_state.analysis_complet
             display_social_media_posts(results.get("social_media_posts", []))
         
         with tabs[4]:
-            # Executive Summary Tab
+
             st.subheader("📋 Executive Summary")
             
             # Key insights
@@ -867,7 +849,7 @@ if "analysis_complete" in st.session_state and st.session_state.analysis_complet
             with col3:
                 st.metric("✍️ Content Pieces Created", social_count)
             
-            # Overall recommendations
+
             st.markdown("### 🎯 Key Recommendations")
             
             recommendations = []
@@ -910,7 +892,7 @@ if "analysis_complete" in st.session_state and st.session_state.analysis_complet
         col1, col2 = st.columns(2)
         
         with col1:
-            # Prepare download data
+
             download_data = json.dumps(results, indent=2, default=str)
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             
@@ -954,7 +936,7 @@ Generated by LangGraph Launch Intelligence AI
                 use_container_width=True
             )
 
-# --- Enhanced Footer ---
+
 st.divider()
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 20px;">
